@@ -41,7 +41,7 @@ class Editor():
         self._globals = canvas._globals
         self._det_faces = detected_faces
 
-        self._current_color = dict()
+        self._current_color = {}
         self._actions = OrderedDict()
         self._controls = dict(header=control_text, controls=[])
         self._add_key_bindings(key_bindings)
@@ -51,7 +51,7 @@ class Editor():
         self._add_annotation_format_controls()
 
         self._mouse_location = None
-        self._drag_data = dict()
+        self._drag_data = {}
         self._drag_callback = None
         self.bind_mouse_motion()
         logger.debug("Initialized %s", self.__class__.__name__)
@@ -81,8 +81,7 @@ class Editor():
         """ ["frame", "face"]: The view mode for the currently selected editor. If the editor does
         not have a view mode that can be updated, then `"frame"` will be returned. """
         tk_var = self._actions.get("magnify", dict()).get("tk_var", None)
-        retval = "frame" if tk_var is None or not tk_var.get() else "face"
-        return retval
+        return "frame" if tk_var is None or not tk_var.get() else "face"
 
     @property
     def _zoomed_roi(self):
@@ -310,9 +309,9 @@ class Editor():
                      "coordinates: %s, object_kwargs: %s)", key, object_type, face_index,
                      coordinates, object_kwargs)
         object_kwargs["tags"] = self._set_object_tags(face_index, key)
-        item_id = getattr(self._canvas,
-                          "create_{}".format(object_type))(*coordinates, **object_kwargs)
-        return item_id
+        return getattr(self._canvas, "create_{}".format(object_type))(
+            *coordinates, **object_kwargs
+        )
 
     def _set_object_tags(self, face_index, key):
         """ Create the tkinter object tags for the incoming object.
@@ -421,7 +420,7 @@ class Editor():
         self._canvas.bind("<ButtonRelease-1>", self._drag_stop)
         self._canvas.bind("<B1-Motion>", self._drag)
 
-    def _drag_start(self, event):  # pylint:disable=unused-argument
+    def _drag_start(self, event):    # pylint:disable=unused-argument
         """ The action to perform when the user starts clicking and dragging the mouse.
 
         The default does nothing except reset the attr:`drag_data` and attr:`drag_callback`.
@@ -433,7 +432,7 @@ class Editor():
             The tkinter mouse event. Unused but for default action, but available for editor
             specific actions
         """
-        self._drag_data = dict()
+        self._drag_data = {}
         self._drag_callback = None
 
     def _drag(self, event):
@@ -451,7 +450,7 @@ class Editor():
             return
         self._drag_callback(event)
 
-    def _drag_stop(self, event):  # pylint:disable=unused-argument
+    def _drag_stop(self, event):    # pylint:disable=unused-argument
         """ The action to perform when the user stops clicking and dragging the mouse.
 
         Default is to set :attr:`_drag_data` to `dict`. Override for Editor specific stop actions.
@@ -461,7 +460,7 @@ class Editor():
         event: :class:`tkinter.Event`
             The tkinter mouse event. Unused but required
         """
-        self._drag_data = dict()
+        self._drag_data = {}
 
     def _scale_to_display(self, points):
         """ Scale and offset the given points to the current display scale and offset values.

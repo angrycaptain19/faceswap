@@ -18,7 +18,7 @@ class Writer(Output):
     def check_transparency_format(self):
         """ Make sure that the output format is correct if draw_transparent is selected """
         transparent = self.config["draw_transparent"]
-        if not transparent or (transparent and self.config["format"] == "png"):
+        if not transparent or self.config["format"] == "png":
             return
         logger.warning("Draw Transparent selected, but the requested format does not support "
                        "transparency. Changing output format to 'png'")
@@ -27,7 +27,7 @@ class Writer(Output):
     def get_save_args(self):
         """ Return the save parameters for the file format """
         filetype = self.config["format"]
-        args = list()
+        args = []
         if filetype == "jpg" and self.config["jpg_quality"] > 0:
             args = (cv2.IMWRITE_JPEG_QUALITY,  # pylint: disable=no-member
                     self.config["jpg_quality"])

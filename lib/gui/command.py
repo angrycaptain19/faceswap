@@ -22,7 +22,7 @@ class CommandNotebook(ttk.Notebook):  # pylint:disable=too-many-ancestors
 
     def __init__(self, parent):
         logger.debug("Initializing %s: (parent: %s)", self.__class__.__name__, parent)
-        self.actionbtns = dict()
+        self.actionbtns = {}
         super().__init__(parent)
         parent.add(self)
 
@@ -36,14 +36,18 @@ class CommandNotebook(ttk.Notebook):  # pylint:disable=too-many-ancestors
     @property
     def tab_names(self):
         """ dict: Command tab titles with their IDs """
-        return {self.tab(tab_id, "text").lower(): tab_id
-                for tab_id in range(0, self.index("end"))}
+        return {
+            self.tab(tab_id, "text").lower(): tab_id
+            for tab_id in range(self.index("end"))
+        }
 
     @property
     def tools_tab_names(self):
         """ dict: Tools tab titles with their IDs """
-        return {self.tools_notebook.tab(tab_id, "text").lower(): tab_id
-                for tab_id in range(0, self.tools_notebook.index("end"))}
+        return {
+            self.tools_notebook.tab(tab_id, "text").lower(): tab_id
+            for tab_id in range(self.tools_notebook.index("end"))
+        }
 
     def set_running_task_trace(self):
         """ Set trigger action for the running task
@@ -88,7 +92,7 @@ class CommandNotebook(ttk.Notebook):  # pylint:disable=too-many-ancestors
     def _set_modified_vars(self):
         """ Set the tkinter variable for each tab to indicate whether contents
         have been modified """
-        tkvars = dict()
+        tkvars = {}
         for tab in self.tab_names:
             if tab == "tools":
                 for ttab in self.tools_tab_names:

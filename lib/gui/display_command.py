@@ -209,7 +209,7 @@ class PreviewTrainCanvas(ttk.Frame):  # pylint: disable=too-many-ancestors
 class GraphDisplay(DisplayOptionalPage):  # pylint: disable=too-many-ancestors
     """ The Graph Tab of the Display section """
     def __init__(self, parent, tab_name, helptext, wait_time, command=None):
-        self._trace_vars = dict()
+        self._trace_vars = {}
         super().__init__(parent, tab_name, helptext, wait_time, command)
 
     def set_vars(self):
@@ -387,7 +387,7 @@ class GraphDisplay(DisplayOptionalPage):  # pylint: disable=too-many-ancestors
         loss_keys = [key
                      for key in self.display_item.get_loss_keys(Session.session_ids[-1])
                      if key != "total"]
-        display_tabs = sorted(set(key[:-1].rstrip("_") for key in loss_keys))
+        display_tabs = sorted({key[:-1].rstrip("_") for key in loss_keys})
 
         for loss_key in display_tabs:
             tabname = loss_key.replace("_", " ").title()
@@ -462,8 +462,8 @@ class GraphDisplay(DisplayOptionalPage):  # pylint: disable=too-many-ancestors
         """ Add tracing for when the option sliders are updated, for updating the graph. """
         for name, action in zip(("smoothgraph", "display_iterations"),
                                 (self._smooth_amount_callback, self._iteration_limit_callback)):
-            var = self.vars[name]
             if name not in self._trace_vars:
+                var = self.vars[name]
                 self._trace_vars[name] = (var, var.trace("w", action))
 
     def _clear_trace_variables(self):
@@ -472,7 +472,7 @@ class GraphDisplay(DisplayOptionalPage):  # pylint: disable=too-many-ancestors
             for name, (var, trace) in self._trace_vars.items():
                 logger.debug("Clearing trace from variable: %s", name)
                 var.trace_vdelete("w", trace)
-            self._trace_vars = dict()
+            self._trace_vars = {}
 
     def close(self):
         """ Clear the plots from RAM """

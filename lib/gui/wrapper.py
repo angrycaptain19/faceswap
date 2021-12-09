@@ -32,7 +32,7 @@ class ProcessWrapper():
         self.pathscript = os.path.realpath(os.path.dirname(sys.argv[0]))
         self.command = None
         self.statusbar = get_config().statusbar
-        self._training_session_location = dict()
+        self._training_session_location = {}
         self.task = FaceswapControl(self)
         logger.debug("Initialized %s", self.__class__.__name__)
 
@@ -278,7 +278,7 @@ class FaceswapControl():
             return False
 
         loss = self.consoleregex["loss"].findall(string)
-        if len(loss) != 2 or not all(len(itm) == 3 for itm in loss):
+        if len(loss) != 2 or any(len(itm) != 3 for itm in loss):
             logger.trace("Not loss message. Returning False")
             return False
 
@@ -356,9 +356,7 @@ class FaceswapControl():
             logger.trace("Not ffmpeg message. Returning False")
             return False
 
-        message = ""
-        for item in ffmpeg:
-            message += "{}: {}  ".format(item[0], item[1])
+        message = "".join("{}: {}  ".format(item[0], item[1]) for item in ffmpeg)
         if not message:
             logger.trace("Error creating ffmpeg message. Returning False")
             return False

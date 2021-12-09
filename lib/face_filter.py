@@ -46,10 +46,8 @@ class FaceFilter():
     @staticmethod
     def load_images(reference_file_paths, nreference_file_paths):
         """ Load the images """
-        retval = dict()
-        for fpath in reference_file_paths:
-            retval[fpath] = {"image": read_image(fpath, raise_error=True),
-                             "type": "filter"}
+        retval = {fpath: {"image": read_image(fpath, raise_error=True),
+                             "type": "filter"} for fpath in reference_file_paths}
         for fpath in nreference_file_paths:
             retval[fpath] = {"image": read_image(fpath, raise_error=True),
                              "type": "nfilter"}

@@ -205,13 +205,15 @@ class FfmpegReader(imageio.plugins.ffmpeg.FfmpegFormat.Reader):
                 meta = self._read_gen.__next__()
             except IOError as err:
                 err_text = str(err)
-                if "darwin" in sys.platform:
-                    if "Unknown input format: 'avfoundation'" in err_text:
-                        err_text += (
-                            "Try installing FFMPEG using "
-                            "home brew to get a version with "
-                            "support for cameras."
-                        )
+                if (
+                    "darwin" in sys.platform
+                    and "Unknown input format: 'avfoundation'" in err_text
+                ):
+                    err_text += (
+                        "Try installing FFMPEG using "
+                        "home brew to get a version with "
+                        "support for cameras."
+                    )
                 raise IndexError(
                     "No camera at {}.\n\n{}".format(self.request._video, err_text)
                 )
@@ -384,7 +386,7 @@ def read_image_meta(filename):
     >>> height = metadata["height"]
     >>> faceswap_info = metadata["itxt"]
     """
-    retval = dict()
+    retval = {}
     if os.path.splitext(filename)[-1].lower() != ".png":
         # Get the dimensions directly from the image for non-pngs
         logger.trace("Non png found. Loading file for dimensions: '%s'", filename)
@@ -485,8 +487,7 @@ def pack_to_itxt(metadata):
     chunk = key + b"\0\0\0\0\0" + metadata
     crc = struct.pack(">I", crc32(chunk, crc32(b"iTXt")) & 0xFFFFFFFF)
     length = struct.pack(">I", len(chunk))
-    retval = length + b"iTXt" + chunk + crc
-    return retval
+    return length + b"iTXt" + chunk + crc
 
 
 def update_existing_metadata(filename, metadata):
@@ -590,8 +591,7 @@ def png_write_meta(png, data):
 
     """
     split = png.find(b"IDAT") - 4
-    retval = png[:split] + pack_to_itxt(data) + png[split:]
-    return retval
+    return png[:split] + pack_to_itxt(data) + png[split:]
 
 
 def png_read_meta(png):

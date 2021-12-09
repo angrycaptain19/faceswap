@@ -282,7 +282,7 @@ class Analysis(DisplayPage):  # pylint: disable=too-many-ancestors
             return
 
         logger.debug("Saving to: '%s'", savefile)
-        fieldnames = sorted(key for key in self._summary[0].keys())
+        fieldnames = sorted(iter(self._summary[0].keys()))
         with savefile as outfile:
             csvout = csv.DictWriter(outfile, fieldnames)
             csvout.writeheader()
@@ -313,7 +313,7 @@ class _Options():  # pylint:disable=too-few-public-methods
         dict
             The button names to button objects
         """
-        buttons = dict()
+        buttons = {}
         for btntype in ("clear", "save", "load"):
             logger.debug("Adding button: '%s'", btntype)
             cmd = getattr(self._parent, "_{}_session".format(btntype))
@@ -384,7 +384,7 @@ class StatsData(ttk.Frame):  # pylint: disable=too-many-ancestors
                      self.__class__.__name__, parent, selected_id, helptext)
         super().__init__(parent)
         self._selected_id = selected_id
-        self._popup_positions = list()
+        self._popup_positions = []
 
         self._canvas = tk.Canvas(self, bd=0, highlightthickness=0)
         tree_frame = ttk.Frame(self._canvas)
@@ -466,7 +466,7 @@ class StatsData(ttk.Frame):  # pylint: disable=too-many-ancestors
         self._tree["columns"] = [column[0] for column in columns]
 
         for column in columns:
-            text = column[2] if column[2] else column[0].title()
+            text = column[2] or column[0].title()
             logger.debug("Adding heading: '%s'", text)
             self._tree.heading(column[0], text=text)
             self._tree.column(column[0], width=column[1], anchor=tk.E, minwidth=40)

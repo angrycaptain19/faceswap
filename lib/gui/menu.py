@@ -158,7 +158,7 @@ class FileMenu(tk.Menu):  # pylint:disable=too-many-ancestors
                 removed_files.append(recent_item)
                 continue
             # Legacy project files didn't have a command stored
-            command = command if command else "project"
+            command = command or "project"
             logger.debug("processing: ('%s', %s)", filename, command)
             if command.lower() == "project":
                 load_func = self._config.project.load
@@ -437,12 +437,10 @@ class HelpMenu(tk.Menu):  # pylint:disable=too-many-ancestors
                 print(output.strip())
         retcode = cmd.poll()
         logger.debug("'%s' returncode: %s", gitcmd, retcode)
-        if retcode != 0:
-            logger.info("An error occurred during update. return code: %s", retcode)
-            retval = False
-        else:
-            retval = True
-        return retval
+        if retcode == 0:
+            return True
+        logger.info("An error occurred during update. return code: %s", retcode)
+        return False
 
 
 class TaskBar(ttk.Frame):  # pylint: disable=too-many-ancestors
@@ -507,7 +505,7 @@ class TaskBar(ttk.Frame):  # pylint: disable=too-many-ancestors
             kwargs = dict(save_as=True)
         else:
             loader = btntype
-            kwargs = dict()
+            kwargs = {}
         logger.debug("btntype: %s, loader: %s, kwargs: %s", btntype, loader, kwargs)
         return loader, kwargs
 

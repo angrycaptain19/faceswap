@@ -36,7 +36,7 @@ class FaceswapConfig():
         """ Training only.
             Return a dict of config items with their set values for items
             that can be altered after the model has been created """
-        retval = dict()
+        retval = {}
         sections = [sect for sect in self.config.sections() if sect.startswith("global")]
         for sect in sections + [self.section]:
             if sect not in self.defaults:
@@ -114,7 +114,7 @@ class FaceswapConfig():
     def config_dict(self):
         """ Collate global options and requested section into a dictionary with the correct
         data types """
-        conf = dict()
+        conf = {}
         sections = [sect for sect in self.config.sections() if sect.startswith("global")]
         sections.append(self.section)
         for sect in sections:
@@ -354,10 +354,7 @@ class FaceswapConfig():
                                        tabsize=4,
                                        subsequent_indent=subsequent_indent) + "\n"
         helptext = '# {}'.format(formatted[:-1].replace("\n", "\n# "))  # Strip last newline
-        if is_section:
-            helptext = helptext.upper()
-        else:
-            helptext = "\n{}".format(helptext)
+        helptext = helptext.upper() if is_section else "\n{}".format(helptext)
         logger.debug("formatted help: '%s'", helptext)
         return helptext
 
@@ -417,7 +414,7 @@ class FaceswapConfig():
                     opt_value = self._parse_list(section, item)
                     if not opt_value:  # No option selected
                         continue
-                    if not all(val in opt["choices"] for val in opt_value):
+                    if any(val not in opt["choices"] for val in opt_value):
                         invalid = [val for val in opt_value if val not in opt["choices"]]
                         valid = ", ".join(val for val in opt_value if val in opt["choices"])
                         logger.warning("The option(s) %s are not valid selections for '%s': '%s'. "

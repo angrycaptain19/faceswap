@@ -51,7 +51,7 @@ class Train():  # pylint:disable=too-few-public-methods
         self._save_now = False
         self._toggle_preview_mask = False
         self._refresh_preview = False
-        self._preview_buffer = dict()
+        self._preview_buffer = {}
         self._lock = Lock()
 
         logger.debug("Initialized %s", self.__class__.__name__)
@@ -66,7 +66,7 @@ class Train():  # pylint:disable=too-few-public-methods
             for that side.
         """
         logger.debug("Getting image paths")
-        images = dict()
+        images = {}
         for side in ("a", "b"):
             image_dir = getattr(self._args, "input_{}".format(side))
             if not os.path.isdir(image_dir):
@@ -78,7 +78,7 @@ class Train():  # pylint:disable=too-few-public-methods
                 logger.error("Error: '%s' contains no images", image_dir)
                 sys.exit(1)
             # Validate the first image is a detected face
-            test_image = next(img for img in images[side])
+            test_image = next(iter(images[side]))
             meta = read_image_meta(test_image)
             logger.debug("Test file: (filename: %s, metadata: %s)", test_image, meta)
             if "itxt" not in meta or "alignments" not in meta["itxt"]:
@@ -164,7 +164,7 @@ class Train():  # pylint:disable=too-few-public-methods
             # Time-lapse images must appear in the training set, as we need access to alignment and
             # mask info. Check filenames are there to save failing much later in the process.
             training_images = [os.path.basename(img) for img in self._images[side]]
-            if not all(img in training_images for img in filenames):
+            if any(img not in training_images for img in filenames):
                 raise FaceswapError(f"All images in the Timelapse folder '{folder}' must exist in "
                                     f"the training folder '{training_folder}'")
 
@@ -428,7 +428,7 @@ class Train():  # pylint:disable=too-few-public-methods
         if not self._args.preview:
             return True
 
-        if key_press == ord("\n") or key_press == ord("\r"):
+        if key_press in [ord("\n"), ord("\r")]:
             logger.debug("Exit requested")
             return False
 

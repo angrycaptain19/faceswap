@@ -39,8 +39,8 @@ class Viewport():
                                       nose=(27, 36),
                                       jaw=(0, 17),
                                       chin=(8, 11))
-        self._landmarks = dict()
-        self._tk_faces = dict()
+        self._landmarks = {}
+        self._tk_faces = {}
         self._objects = VisibleObjects(self)
         self._hoverbox = HoverBox(self)
         self._active_frame = ActiveFrame(self, tk_edited_variable)
@@ -59,9 +59,8 @@ class Viewport():
         type (`polygon` or `line`), value are the keyword arguments for that type. """
         state = "normal" if self._canvas.optional_annotations["mesh"] else "hidden"
         color = self._canvas.control_colors["Mesh"]
-        kwargs = dict(polygon=dict(fill="", outline=color, state=state),
+        return dict(polygon=dict(fill="", outline=color, state=state),
                       line=dict(fill=color, state=state))
-        return kwargs
 
     @property
     def hover_box(self):
@@ -135,7 +134,7 @@ class Viewport():
     def reset(self):
         """ Reset all the cached objects on a face size change. """
         self._landmarks = dict()
-        self._tk_faces = dict()
+        self._tk_faces = {}
 
     def update(self, refresh_annotations=False):
         """ Update the viewport.

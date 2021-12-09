@@ -55,7 +55,7 @@ class DataItem():
             self.name = os.path.basename(self.path)
         elif name is not None and self.path is None:
             self.name = os.path.basename(name)
-        elif name is not None and self.path is not None:
+        elif name is not None:
             self.name = os.path.basename(name)
         else:
             self.name = None
@@ -65,19 +65,18 @@ class DataItem():
         """ Set the extension """
         if path is not None:
             self.path = path
-        if self.path is not None:
-            item_ext = os.path.splitext(self.path)[1].lower()
-            if item_ext in DataItem.vid_ext:
-                item_type = 'vid'
-            elif item_ext in DataItem.audio_ext:
-                item_type = 'audio'
-            else:
-                item_type = 'dir'
-            self.type = item_type
-            self.ext = item_ext
-            logger.debug("path: '%s', type: '%s', ext: '%s'", self.path, self.type, self.ext)
-        else:
+        if self.path is None:
             return
+        item_ext = os.path.splitext(self.path)[1].lower()
+        if item_ext in DataItem.vid_ext:
+            item_type = 'vid'
+        elif item_ext in DataItem.audio_ext:
+            item_type = 'audio'
+        else:
+            item_type = 'dir'
+        self.type = item_type
+        self.ext = item_ext
+        logger.debug("path: '%s', type: '%s', ext: '%s'", self.path, self.type, self.ext)
 
     def set_dirname(self, path=None):
         """ Set the folder name """
@@ -85,7 +84,7 @@ class DataItem():
             self.dirname = os.path.dirname(self.path)
         elif path is not None and self.path is None:
             self.dirname = os.path.dirname(path)
-        elif path is not None and self.path is not None:
+        elif path is not None:
             self.dirname = os.path.dirname(path)
         else:
             self.dirname = None
@@ -387,7 +386,7 @@ class Effmpeg():
         if transpose is not None:
             _output_opts += 'transpose="' + str(transpose) + '"'
         elif int(degrees) != 0:
-            if int(degrees) % 90 == 0 and int(degrees) != 0:
+            if int(degrees) % 90 == 0:
                 _bilinear = ":bilinear=0"
             _output_opts += 'rotate="' + str(degrees) + '*(PI/180)'
             _output_opts += _bilinear + '" '
@@ -435,27 +434,25 @@ class Effmpeg():
             if self.args.action in self._actions_have_dir_output:
                 retval = os.path.join(self.input.dirname, 'out')
             elif self.args.action in self._actions_have_vid_output:
-                if self.input.is_type("media"):
+                if self.input.is_type("media") or not self.input.is_type("media"):
                     # Using the same extension as input leads to very poor
                     # output quality, hence the default is mkv for now
                     retval = os.path.join(self.input.dirname, "out.mkv")  # + self.input.ext)
-                else:  # case if input was a directory
-                    retval = os.path.join(self.input.dirname, 'out.mkv')
         else:
             retval = self.args.output
         logger.debug(retval)
         return retval
 
     def __check_have_fps(self, items):
-        items_to_check = list()
+        items_to_check = []
         for i in items:
-            if i == 'r':
-                items_to_check.append('ref_vid')
-            elif i == 'i':
+            if i == 'i':
                 items_to_check.append('input')
             elif i == 'o':
                 items_to_check.append('output')
 
+            elif i == 'r':
+                items_to_check.append('ref_vid')
         return all(getattr(self, i).fps is None for i in items_to_check)
 
     @staticmethod
@@ -467,9 +464,7 @@ class Effmpeg():
             ffm.run(stderr=subprocess.STDOUT)
         except FFRuntimeError as ffe:
             # After receiving SIGINT ffmpeg has a 255 exit code
-            if ffe.exit_code == 255:
-                pass
-            else:
+            if ffe.exit_code != 255:
                 raise ValueError("An unexpected FFRuntimeError occurred: "
                                  "{}".format(ffe))
         except KeyboardInterrupt:
@@ -554,7 +549,7 @@ class Effmpeg():
     def parse_time(txt):
         """ Parse Time """
         clean_txt = txt.replace(':', '')
-        hours = clean_txt[0:2]
+        hours = clean_txt[:2]
         minutes = clean_txt[2:4]
         seconds = clean_txt[4:6]
         retval = hours + ':' + minutes + ':' + seconds

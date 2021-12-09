@@ -21,7 +21,7 @@ class QueueManager():
         logger.debug("Initializing %s", self.__class__.__name__)
 
         self.shutdown = threading.Event()
-        self.queues = dict()
+        self.queues = {}
         logger.debug("Initialized %s", self.__class__.__name__)
 
     def add_queue(self, name, maxsize=0, create_new=False):

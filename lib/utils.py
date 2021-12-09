@@ -44,8 +44,7 @@ class _Backend():  # pylint:disable=too-few-public-methods
             The path to the Faceswap configuration file
         """
         pypath = os.path.dirname(os.path.realpath(sys.argv[0]))
-        config_file = os.path.join(pypath, "config", ".faceswap")
-        return config_file
+        return os.path.join(pypath, "config", ".faceswap")
 
     def _get_backend(self):
         """ Return the backend from either the `FACESWAP_BACKEND` Environment Variable or from
@@ -176,7 +175,7 @@ def get_image_paths(directory, extension=None):
     """
     logger = logging.getLogger(__name__)  # pylint:disable=invalid-name
     image_extensions = _image_extensions if extension is None else [extension]
-    dir_contents = list()
+    dir_contents = []
 
     if not os.path.exists(directory):
         logger.debug("Creating folder: '%s'", directory)
@@ -242,7 +241,7 @@ def full_path_split(path):
     >>> ["foo", "baz", "bar"]
     """
     logger = logging.getLogger(__name__)  # pylint:disable=invalid-name
-    allparts = list()
+    allparts = []
     while True:
         parts = os.path.split(path)
         if parts[0] == path:   # sentinel for absolute paths

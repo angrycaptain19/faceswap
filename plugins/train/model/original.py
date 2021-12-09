@@ -94,8 +94,7 @@ class Model(ModelBase):
 
         outputs = [self.decoder("a")(encoder_a), self.decoder("b")(encoder_b)]
 
-        autoencoder = KerasModel(inputs, outputs, name=self.model_name)
-        return autoencoder
+        return KerasModel(inputs, outputs, name=self.model_name)
 
     def encoder(self):
         """ The original Faceswap Encoder Network.
@@ -118,7 +117,7 @@ class Model(ModelBase):
         if not self.low_mem:
             var_x = Conv2DBlock(1024, activation="leakyrelu")(var_x)
         var_x = Dense(self.encoder_dim)(Flatten()(var_x))
-        var_x = Dense(4 * 4 * 1024)(var_x)
+        var_x = Dense(4**2 * 1024)(var_x)
         var_x = Reshape((4, 4, 1024))(var_x)
         var_x = UpscaleBlock(512, activation="leakyrelu")(var_x)
         return KerasModel(input_, var_x, name="encoder")

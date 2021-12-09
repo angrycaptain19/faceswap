@@ -1,6 +1,7 @@
 #!/usr/bin python3
 """ The pop-up window of the Faceswap GUI for the setting of configuration options. """
 
+
 from collections import OrderedDict
 from configparser import ConfigParser
 import gettext
@@ -25,7 +26,7 @@ _ = _LANG.gettext
 
 _POPUP = []
 _CONFIG_FILES = []
-_CONFIGS = dict()
+_CONFIGS = {}
 
 
 class _State():
@@ -34,7 +35,7 @@ class _State():
         self._popup = None
         # The GUI Config cannot be scanned until GUI is launched, so this is populated
         # on the first call to load the settings
-        self._configs = dict()
+        self._configs = {}
 
     def open_popup(self, name=None):
         """ Launch the popup, ensuring only one instance is ever open
@@ -143,7 +144,7 @@ class _ConfigurePlugins(tk.Toplevel):
         content_frame.pack(fill=tk.BOTH, padx=5, pady=(0, 5), expand=True, side=tk.TOP)
         footer_frame.pack(fill=tk.X, padx=5, pady=(0, 5), side=tk.BOTTOM)
 
-        select = name if name else self._tree.get_children()[0]
+        select = name or self._tree.get_children()[0]
         self._tree.selection_set(select)
         self._tree.focus(select)
         self._select_item(0)
@@ -406,8 +407,8 @@ class DisplayArea(ttk.Frame):  # pylint:disable=too-many-ancestors
         self._configs = configurations
         self._theme = theme
         self._tree = tree
-        self._vars = dict()
-        self._cache = dict()
+        self._vars = {}
+        self._cache = {}
         self._config_cpanel_dict = self._get_config()
         self._displayed_frame = None
         self._displayed_key = None
@@ -436,7 +437,7 @@ class DisplayArea(ttk.Frame):  # pylint:disable=too-many-ancestors
             objects
         """
         logger.debug("Formatting Config for GUI")
-        retval = dict()
+        retval = {}
         for plugin, conf in self._configs.items():
             for section in conf.config.sections():
                 conf.section = section
@@ -649,11 +650,7 @@ class DisplayArea(ttk.Frame):  # pylint:disable=too-many-ancestors
         # Create a new config to pull through any defaults change
         new_config = ConfigParser(allow_no_value=True)
 
-        if "|" in selection:
-            lookup = ".".join(selection.split("|")[1:])
-        else:  # Expand global out from root node
-            lookup = "global"
-
+        lookup = ".".join(selection.split("|")[1:]) if "|" in selection else "global"
         if page_only and lookup not in config.config.sections():
             logger.info("No settings to save for the current page")
             return

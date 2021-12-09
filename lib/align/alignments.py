@@ -51,8 +51,8 @@ class Alignments():
         self._meta = None
         self._data = self._load()
         self._update_legacy()
-        self._hashes_to_frame = dict()
-        self._hashes_to_alignment = dict()
+        self._hashes_to_frame = {}
+        self._hashes_to_alignment = {}
         self._thumbnails = Thumbnails(self)
         logger.debug("Initialized %s", self.__class__.__name__)
 
@@ -136,7 +136,7 @@ class Alignments():
     def mask_summary(self):
         """ dict: The mask type names stored in the alignments :attr:`data` as key with the number
         of faces which possess the mask type as value. """
-        masks = dict()
+        masks = {}
         for val in self._data.values():
             for face in val["faces"]:
                 if face.get("mask", None) is None:
@@ -287,7 +287,7 @@ class Alignments():
         if pts_time[0] != 0:
             pts_time, keyframes = self._pad_leading_frames(pts_time, keyframes)
 
-        sample_filename = next(fname for fname in self.data)
+        sample_filename = next(iter(self.data))
         basename = sample_filename[:sample_filename.rfind("_")]
         logger.debug("sample filename: %s, base filename: %s", sample_filename, basename)
         logger.info("Saving video meta information to Alignments file")
@@ -433,10 +433,15 @@ class Alignments():
             ``True`` if all faces in the current alignments possess the given ``mask_type``
             otherwise ``False``
         """
-        retval = any([(face.get("mask", None) is not None and
-                       face["mask"].get(mask_type, None) is not None)
-                      for val in self._data.values()
-                      for face in val["faces"]])
+        retval = any(
+            (
+                face.get("mask", None) is not None
+                and face["mask"].get(mask_type, None) is not None
+            )
+            for val in self._data.values()
+            for face in val["faces"]
+        )
+
         logger.debug(retval)
         return retval
 
@@ -741,10 +746,9 @@ class Alignments():
             ``True`` if not all landmarks are :class:`numpy.ndarray` otherwise ``False``
         """
         logger.debug("checking legacy landmarks as list")
-        retval = not all(isinstance(face["landmarks_xy"], np.ndarray)
+        return not all(isinstance(face["landmarks_xy"], np.ndarray)
                          for val in self._data.values()
                          for face in val["faces"])
-        return retval
 
     def _update_legacy_landmarks_list(self):
         """ Update landmarks stored as `list` to :class:`numpy.ndarray`. """

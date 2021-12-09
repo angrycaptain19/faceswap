@@ -44,8 +44,7 @@ class ScriptExecutor():  # pylint:disable=too-few-public-methods
         src = "tools.{}".format(self._command.lower()) if cmd == "tools.py" else "scripts"
         mod = ".".join((src, self._command.lower()))
         module = import_module(mod)
-        script = getattr(module, self._command.title())
-        return script
+        return getattr(module, self._command.title())
 
     def _test_for_tf_version(self):
         """ Check that the required Tensorflow version is installed.
@@ -64,17 +63,11 @@ class ScriptExecutor():  # pylint:disable=too-few-public-methods
             import tensorflow as tf  # pylint:disable=import-outside-toplevel
         except ImportError as err:
             if "DLL load failed while importing" in str(err):
-                msg = (
-                    f"A DLL library file failed to load. Make sure that you have Microsoft Visual "
-                    "C++ Redistributable (2015, 2017, 2019) installed for your machine from: "
-                    "https://support.microsoft.com/en-gb/help/2977003. Original error: "
-                    f"{str(err)}")
+                msg = f'A DLL library file failed to load. Make sure that you have Microsoft Visual C++ Redistributable (2015, 2017, 2019) installed for your machine from: https://support.microsoft.com/en-gb/help/2977003. Original error: {err}'
+
             else:
-                msg = (
-                    f"There was an error importing Tensorflow. This is most likely because you do "
-                    "not have TensorFlow installed, or you are trying to run tensorflow-gpu on a "
-                    "system without an Nvidia graphics card. Original import "
-                    f"error: {str(err)}")
+                msg = f'There was an error importing Tensorflow. This is most likely because you do not have TensorFlow installed, or you are trying to run tensorflow-gpu on a system without an Nvidia graphics card. Original import error: {err}'
+
             self._handle_import_error(msg)
 
         tf_ver = float(".".join(tf.__version__.split(".")[:2]))  # pylint:disable=no-member
@@ -98,13 +91,12 @@ class ScriptExecutor():  # pylint:disable=too-few-public-methods
         message: str
             The error message to display
         """
-        if "gui" in sys.argv and platform.system() == "Windows":
-            logger.error(message)
-            logger.info("Press \"ENTER\" to dismiss the message and close FaceSwap")
-            input()
-            sys.exit(1)
-        else:
+        if "gui" not in sys.argv or platform.system() != "Windows":
             raise FaceswapError(message)
+        logger.error(message)
+        logger.info("Press \"ENTER\" to dismiss the message and close FaceSwap")
+        input()
+        sys.exit(1)
 
     def _test_for_gui(self):
         """ If running the gui, performs check to ensure necessary prerequisites are present. """

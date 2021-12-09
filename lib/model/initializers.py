@@ -285,8 +285,9 @@ class ConvolutionAware(initializers.Initializer):
         var_a = np.random.normal(0.0, 1.0, (filters_size, nbb, size, size))
         var_a = self._symmetrize(var_a)
         var_u = np.linalg.svd(var_a)[0].transpose(0, 1, 3, 2)
-        var_p = np.reshape(var_u, (filters_size, nbb * size, size))[:, :filters, :].astype(dtype)
-        return var_p
+        return np.reshape(var_u, (filters_size, nbb * size, size))[
+            :, :filters, :
+        ].astype(dtype)
 
     @staticmethod
     def _symmetrize(var_a):

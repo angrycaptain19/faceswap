@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Handles Data Augmentation for feeding Faceswap Models """
 
+
 import logging
 import os
 
@@ -20,7 +21,7 @@ from . import ImageAugmentation
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
-_FACE_CACHES = dict()
+_FACE_CACHES = {}
 
 
 def _get_cache(side, filenames, config):
@@ -63,8 +64,7 @@ def _check_reset(face_cache):
         ``True`` if the given object should reset the cache, otherwise ``False``
     """
     check_cache = next((cache for cache in _FACE_CACHES.values() if cache != face_cache), None)
-    retval = check_cache if check_cache is None else check_cache.check_reset()
-    return retval
+    return check_cache if check_cache is None else check_cache.check_reset()
 
 
 class _Cache():
@@ -486,7 +486,7 @@ class TrainingDataGenerator():  # pylint:disable=too-few-public-methods
         # from lib.training_data
         self._batchsize = 0
         self._face_cache = None
-        self._nearest_landmarks = dict()
+        self._nearest_landmarks = {}
         self._processing = None
         logger.debug("Initialized %s", self.__class__.__name__)
 
@@ -589,8 +589,7 @@ class TrainingDataGenerator():  # pylint:disable=too-few-public-methods
             while True:
                 if do_shuffle:
                     shuffle(imgs)
-                for img in imgs:
-                    yield img
+                yield from imgs
 
         img_iter = _img_iter(images)
         while True:
@@ -625,7 +624,7 @@ class TrainingDataGenerator():  # pylint:disable=too-few-public-methods
         cache = self._face_cache.get_items(filenames)
         batch, landmarks = self._crop_to_center(filenames, cache, batch, side)
         batch = self._apply_mask(filenames, cache, batch, side)
-        processed = dict()
+        processed = {}
 
         # Initialize processing training size on first image
         if not self._processing.initialized:
@@ -636,7 +635,7 @@ class TrainingDataGenerator():  # pylint:disable=too-few-public-methods
             batch_dst_pts = self._get_closest_match(filenames, side, landmarks)
             warp_kwargs = dict(batch_src_points=landmarks, batch_dst_points=batch_dst_pts)
         else:
-            warp_kwargs = dict()
+            warp_kwargs = {}
 
         # Color Augmentation of the image only
         if self._augment_color:
@@ -749,7 +748,7 @@ class TrainingDataGenerator():  # pylint:disable=too-few-public-methods
             if lookup is None and key != "mask":
                 continue
 
-            if lookup is None and key == "mask":
+            if lookup is None:
                 logger.trace("Creating dummy masks. side: %s", side)
                 masks = np.ones_like(batch[..., :1], dtype=batch.dtype)
             else:
@@ -779,11 +778,11 @@ class TrainingDataGenerator():  # pylint:disable=too-few-public-methods
         class:`numpy.ndarray`
             The decompressed mask
         """
-        if isinstance(item, bytes):
-            retval = np.frombuffer(decompress(item), dtype="uint8").reshape(size, size, 1)
-        else:
-            retval = item.mask
-        return retval
+        return (
+            np.frombuffer(decompress(item), dtype="uint8").reshape(size, size, 1)
+            if isinstance(item, bytes)
+            else item.mask
+        )
 
     @classmethod
     def _resize_masks(cls, target_size, masks):
@@ -828,7 +827,7 @@ class TrainingDataGenerator():  # pylint:disable=too-few-public-methods
         logger.trace("Caching closest matches")
         dst_landmarks = list(landmarks.items())
         dst_points = np.array([lm[1] for lm in dst_landmarks])
-        batch_closest_matches = list()
+        batch_closest_matches = []
 
         for filename, src_points in zip(filenames, batch_src_points):
             closest = (np.mean(np.square(src_points - dst_points), axis=(1, 2))).argsort()[:10]

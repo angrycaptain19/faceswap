@@ -31,7 +31,7 @@ class Writer(Output):
         if frame_ranges is None:
             retval = list(range(1, total_count + 1))
         else:
-            retval = list()
+            retval = []
             for rng in frame_ranges:
                 retval.extend(list(range(rng[0], rng[1] + 1)))
         logger.debug("frame_order: %s", retval)
