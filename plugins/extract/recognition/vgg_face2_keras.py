@@ -147,10 +147,9 @@ class VGGFace2(Extractor):  # pylint:disable=abstract-method
             func = linkage
 
         result_linkage = func(predictions, **kwargs)
-        result_order = self._seriation(result_linkage,
+        return self._seriation(result_linkage,
                                        num_predictions,
                                        num_predictions + num_predictions - 2)
-        return result_order
 
     @staticmethod
     def _use_vector_linkage(item_count, dims):

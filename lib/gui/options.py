@@ -22,7 +22,7 @@ class CliOptions():
         logger.debug("Initializing %s", self.__class__.__name__)
         self.categories = ("faceswap", "tools")
         self.commands = dict()
-        self.opts = dict()
+        self.opts = {}
         self.build_options()
         logger.debug("Initialized %s", self.__class__.__name__)
 
@@ -44,13 +44,15 @@ class CliOptions():
     @staticmethod
     def get_cli_classes(cli_source):
         """ Parse the cli scripts for the argument classes """
-        mod_classes = []
-        for name, obj in inspect.getmembers(cli_source):
-            if inspect.isclass(obj) and name.lower().endswith("args") \
-                    and name.lower() not in (("faceswapargs",
-                                              "extractconvertargs",
-                                              "guiargs")):
-                mod_classes.append(name)
+        mod_classes = [
+            name
+            for name, obj in inspect.getmembers(cli_source)
+            if inspect.isclass(obj)
+            and name.lower().endswith("args")
+            and name.lower()
+            not in (("faceswapargs", "extractconvertargs", "guiargs"))
+        ]
+
         logger.debug(mod_classes)
         return mod_classes
 
@@ -59,7 +61,7 @@ class CliOptions():
         """ Parse the tools cli scripts for the argument classes """
         base_path = os.path.realpath(os.path.dirname(sys.argv[0]))
         tools_dir = os.path.join(base_path, "tools")
-        mod_classes = dict()
+        mod_classes = {}
         for tool_name in sorted(os.listdir(tools_dir)):
             cli_file = os.path.join(tools_dir, tool_name, "cli.py")
             if os.path.exists(cli_file):
@@ -88,7 +90,7 @@ class CliOptions():
     def extract_options(self, cli_source, mod_classes):
         """ Extract the existing ArgParse Options
             into master options Dictionary """
-        subopts = dict()
+        subopts = {}
         for classname in mod_classes:
             logger.debug("Processing: (classname: '%s')", classname)
             command = self.format_command_name(classname)
@@ -146,24 +148,22 @@ class CliOptions():
     def get_data_type(opt):
         """ Return a datatype for passing into control_helper.py to get the correct control """
         if opt.get("type", None) is not None and isinstance(opt["type"], type):
-            retval = opt["type"]
+            return opt["type"]
         elif opt.get("action", "") in ("store_true", "store_false"):
-            retval = bool
+            return bool
         else:
-            retval = str
-        return retval
+            return str
 
     @staticmethod
     def get_rounding(opt):
         """ Return rounding if correct data type, else None """
         dtype = opt.get("type", None)
         if dtype == float:
-            retval = opt.get("rounding", 2)
+            return opt.get("rounding", 2)
         elif dtype == int:
-            retval = opt.get("rounding", 1)
+            return opt.get("rounding", 1)
         else:
-            retval = None
-        return retval
+            return None
 
     def get_sysbrowser(self, option, options, command):
         """ Return the system file browser and file types if required else None """
@@ -176,7 +176,7 @@ class CliOptions():
                           actions.ContextFullPaths):
             return None
 
-        retval = dict()
+        retval = {}
         action_option = None
         if option.get("action_option", None) is not None:
             self.expand_action_option(option, options)
@@ -220,12 +220,18 @@ class CliOptions():
     def options_to_process(self, command=None):
         """ Return a consistent object for processing regardless of whether processing all commands
             or just one command for reset and clear. Removes helptext from return value """
-        if command is None:
-            options = [opt for opts in self.opts.values()
-                       for opt in opts.values() if isinstance(opt, dict)]
-        else:
-            options = [opt for opt in self.opts[command].values() if isinstance(opt, dict)]
-        return options
+        return (
+            [
+                opt
+                for opts in self.opts.values()
+                for opt in opts.values()
+                if isinstance(opt, dict)
+            ]
+            if command is None
+            else [
+                opt for opt in self.opts[command].values() if isinstance(opt, dict)
+            ]
+        )
 
     def reset(self, command=None):
         """ Reset the options for all or passed command
@@ -253,15 +259,16 @@ class CliOptions():
 
     def get_option_values(self, command=None):
         """ Return all or single command control titles with the associated tk_var value """
-        ctl_dict = dict()
+        ctl_dict = {}
         for cmd, opts in self.opts.items():
             if command and command != cmd:
                 continue
-            cmd_dict = dict()
-            for key, val in opts.items():
-                if not isinstance(val, dict):
-                    continue
-                cmd_dict[key] = val["cpanel_option"].get()
+            cmd_dict = {
+                key: val["cpanel_option"].get()
+                for key, val in opts.items()
+                if isinstance(val, dict)
+            }
+
             ctl_dict[cmd] = cmd_dict
         logger.debug("command: '%s', ctl_dict: %s", command, ctl_dict)
         return ctl_dict
@@ -281,7 +288,7 @@ class CliOptions():
             opt = option["opts"][0]
             if command in ("extract", "convert") and opt == "-o":
                 get_images().set_faceswap_output_path(optval)
-            if optval in ("False", ""):
+            if optval in {"False", ""}:
                 continue
             if optval == "True":
                 yield (opt, )

@@ -264,8 +264,7 @@ class Model(ModelBase):
 
         # Create Autoencoder
         outputs = [decoders["a"], decoders["b"]]
-        autoencoder = KerasModel(inputs, outputs, name=self.model_name)
-        return autoencoder
+        return KerasModel(inputs, outputs, name=self.model_name)
 
     def _build_encoders(self, inputs):
         """ Build the encoders for Phaze-A
@@ -563,10 +562,9 @@ class Encoder():  # pylint:disable=too-few-public-methods
         """
         default_size = self._selected_model.get("default_size")
         if self._config["enc_load_weights"] and self._selected_model.get("enforce_for_weights"):
-            retval = (default_size, default_size, 3)
+            return default_size, default_size, 3
         else:
-            retval = self._input_shape
-        return retval
+            return self._input_shape
 
     def __call__(self):
         """ Create the Phaze-A Encoder Model.
@@ -639,15 +637,13 @@ class Encoder():  # pylint:disable=too-few-public-methods
         :class:`keras.Model`
             The selected keras model for the chosen encoder architecture
         """
-        if self._selected_model.get("keras_name"):
-            kwargs = self._selected_model["kwargs"]
-            kwargs["input_shape"] = self._model_input_shape
-            kwargs["include_top"] = False
-            kwargs["weights"] = "imagenet" if self._config["enc_load_weights"] else None
-            retval = getattr(kapp, self._selected_model["keras_name"])(**kwargs)
-        else:
-            retval = _EncoderFaceswap(self._config)
-        return retval
+        if not self._selected_model.get("keras_name"):
+            return _EncoderFaceswap(self._config)
+        kwargs = self._selected_model["kwargs"]
+        kwargs["input_shape"] = self._model_input_shape
+        kwargs["include_top"] = False
+        kwargs["weights"] = "imagenet" if self._config["enc_load_weights"] else None
+        return getattr(kapp, self._selected_model["keras_name"])(**kwargs)
 
 
 class _EncoderFaceswap():  # pylint:disable=too-few-public-methods

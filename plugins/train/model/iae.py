@@ -28,8 +28,7 @@ class Model(ModelBase):
         outputs = [decoder(Concatenate()([inter_a(encoder_a), inter_both(encoder_a)])),
                    decoder(Concatenate()([inter_b(encoder_b), inter_both(encoder_b)]))]
 
-        autoencoder = KerasModel(inputs, outputs, name=self.model_name)
-        return autoencoder
+        return KerasModel(inputs, outputs, name=self.model_name)
 
     def encoder(self):
         """ Encoder Network """
@@ -46,7 +45,7 @@ class Model(ModelBase):
         """ Intermediate Network """
         input_ = Input(shape=(4 * 4 * 1024, ))
         var_x = Dense(self.encoder_dim)(input_)
-        var_x = Dense(4 * 4 * int(self.encoder_dim/2))(var_x)
+        var_x = Dense(4**2 * int(self.encoder_dim/2))(var_x)
         var_x = Reshape((4, 4, int(self.encoder_dim/2)))(var_x)
         return KerasModel(input_, var_x, name="inter_{}".format(side))
 

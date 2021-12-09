@@ -92,7 +92,7 @@ class KSession():
             feed = [feed]
         items = feed[0].shape[0]
         done_items = 0
-        results = list()
+        results = []
         while done_items < items:
             if batch_size < 4:  # Not much difference in BS < 4
                 batch_size = 1

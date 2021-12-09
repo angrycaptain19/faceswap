@@ -405,8 +405,8 @@ class ControlPanel(ttk.Frame):  # pylint:disable=too-many-ancestors
         if self._style.startswith("SPanel"):
             self._theme = {**self._theme, **get_config().user_theme["group_settings"]}
 
-        self.group_frames = dict()
-        self._sub_group_frames = dict()
+        self.group_frames = {}
+        self._sub_group_frames = {}
 
         canvas_kwargs = dict(bd=0, highlightthickness=0, bg=self._theme["panel_background"])
 
@@ -705,7 +705,7 @@ class AutoFillContainer():
         dict
             The custom keyword arguments required for recreating the given widget
         """
-        retval = dict()
+        retval = {}
         if widget.__class__.__name__ == "MultiOption":
             retval = dict(value=widget._value,  # pylint:disable=protected-access
                           variable=widget._master_variable)  # pylint:disable=protected-access
@@ -739,8 +739,10 @@ class AutoFillContainer():
                 # bindings on the headers, to auto-hide the contents. To ensure that all child
                 # information (specifically pack information) can be collected, we need to pack
                 # any hidden sub-frames. These are then hidden again once collected.
-                if not_mapped and (child.winfo_name() == "toggledframe_subframe" or
-                                   child.winfo_name() == "chkbuttons"):
+                if not_mapped and child.winfo_name() in [
+                    "toggledframe_subframe",
+                    "chkbuttons",
+                ]:
                     child.pack(fill=tk.X, expand=True)
                     child.update_idletasks()  # Updates the packing info of children
                     unpack.add(child)
@@ -773,7 +775,7 @@ class AutoFillContainer():
             configuration from a widget
             We use config() instead of configure() because some items (ttk Scale) do
             not populate configure()"""
-        new_config = dict()
+        new_config = {}
         for key in widget.config():
             if key == "class":
                 continue
@@ -906,7 +908,7 @@ class ControlBuilder():
         self.label_width = label_width
         self.filebrowser = None
         # Default to Control Panel Style
-        self._style = style = style if style else "CPanel."
+        self._style = style = style or "CPanel."
         self._theme = get_config().user_theme["group_panel"]
         if self._style.startswith("SPanel"):
             self._theme = {**self._theme, **get_config().user_theme["group_settings"]}
@@ -1042,9 +1044,7 @@ class ControlBuilder():
         """
         logger.debug("raw help: %s", helptext)
         all_help = helptext.splitlines()
-        intro = ""
-        if any(line.startswith(" - ") for line in all_help):
-            intro = all_help[0]
+        intro = all_help[0] if any(line.startswith(" - ") for line in all_help) else ""
         retval = (intro,
                   {re.sub(r"[^A-Za-z0-9\-\_]+", "",
                           line.split()[1].lower()): " ".join(line.replace("_", " ").split()[1:])
@@ -1098,9 +1098,7 @@ class ControlBuilder():
         value: str
             The slider text entry value to validate
         """
-        if value.isdigit() or value == "":
-            return True
-        return False
+        return bool(value.isdigit() or value == "")
 
     @staticmethod
     def slider_check_float(value):
@@ -1232,7 +1230,7 @@ class FileBrowser():
     @property
     def helptext(self):
         """ Dict containing tooltip text for buttons """
-        retval = dict(folder=_("Select a folder..."),
+        return dict(folder=_("Select a folder..."),
                       load=_("Select a file..."),
                       load2=_("Select a file..."),
                       picture=_("Select a folder of images..."),
@@ -1241,7 +1239,6 @@ class FileBrowser():
                       multi_load=_("Select one or more files..."),
                       context=_("Select a file or folder..."),
                       save_as=_("Select a save location..."))
-        return retval
 
     @staticmethod
     def format_action_option(action_option):

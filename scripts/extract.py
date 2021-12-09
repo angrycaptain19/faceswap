@@ -53,7 +53,7 @@ class Extract():  # pylint:disable=too-few-public-methods
         normalization = None if self._args.normalization == "none" else self._args.normalization
 
         maskers = ["components", "extended"]
-        maskers += self._args.masker if self._args.masker else []
+        maskers += self._args.masker or []
         self._extractor = Extractor(self._args.detector,
                                     self._args.aligner,
                                     maskers,
@@ -64,7 +64,7 @@ class Extract():  # pylint:disable=too-few-public-methods
                                     min_size=self._args.min_size,
                                     normalize_method=normalization,
                                     re_feed=self._args.re_feed)
-        self._threads = list()
+        self._threads = []
         self._verify_output = False
         logger.debug("Initialized %s", self.__class__.__name__)
 
@@ -202,7 +202,7 @@ class Extract():  # pylint:disable=too-few-public-methods
             if exception:
                 break
             is_final = self._extractor.final_pass
-            detected_faces = dict()
+            detected_faces = {}
             self._extractor.launch()
             self._check_thread_error()
             ph_desc = "Extraction" if self._extractor.passes == 1 else self._extractor.phase_text
@@ -281,7 +281,7 @@ class Extract():  # pylint:disable=too-few-public-methods
             The output from :class:`~plugins.extract.Pipeline.Extractor`
         """
         logger.trace("Outputting faces for %s", extract_media.filename)
-        final_faces = list()
+        final_faces = []
         filename = os.path.splitext(os.path.basename(extract_media.filename))[0]
         extension = ".png"
 

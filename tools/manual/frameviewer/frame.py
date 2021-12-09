@@ -42,7 +42,7 @@ class DisplayFrame(ttk.Frame):  # pylint:disable=too-many-ancestors
 
         self._globals = tk_globals
         self._det_faces = detected_faces
-        self._optional_widgets = dict()
+        self._optional_widgets = {}
 
         self._actions_frame = ActionsFrame(self)
         main_frame = ttk.Frame(self)
@@ -89,14 +89,13 @@ class DisplayFrame(ttk.Frame):  # pylint:disable=too-many-ancestors
     @property
     def _btn_action(self):
         """ dict: {`name`: `action`} Command lookup for navigation buttons """
-        actions = dict(play=self._navigation.handle_play_button,
+        return dict(play=self._navigation.handle_play_button,
                        beginning=self._navigation.goto_first_frame,
                        prev=self._navigation.decrement_frame,
                        next=self._navigation.increment_frame,
                        end=self._navigation.goto_last_frame,
                        extract=self._det_faces.extract,
                        save=self._det_faces.save)
-        return actions
 
     @property
     def tk_selected_action(self):
@@ -187,7 +186,7 @@ class DisplayFrame(ttk.Frame):  # pylint:disable=too-many-ancestors
         frame = ttk.Frame(self._transport_frame)
         frame.pack(side=tk.BOTTOM, fill=tk.X)
         icons = get_images().icons
-        buttons = dict()
+        buttons = {}
         for action in ("play", "beginning", "prev", "next", "end", "save", "extract", "mode"):
             padx = (0, 6) if action in ("play", "prev", "mode") else (0, 0)
             side = tk.RIGHT if action in ("extract", "save", "mode") else tk.LEFT
@@ -366,7 +365,7 @@ class ActionsFrame(ttk.Frame):  # pylint:disable=too-many-ancestors
         self._buttons = self._add_buttons()
         self._static_buttons = self._add_static_buttons()
         self._selected_action = self._set_selected_action_tkvar()
-        self._optional_buttons = dict()  # Has to be set from parent after canvas is initialized
+        self._optional_buttons = {}
 
     @property
     def actions(self):
@@ -393,8 +392,8 @@ class ActionsFrame(ttk.Frame):  # pylint:disable=too-many-ancestors
                       ExtractBox=_("Location editor"),
                       Mask=_("Mask editor"),
                       Landmarks=_("Landmark point editor"))
-        for item in retval:
-            retval[item] += " ({})".format(inverse_keybindings[item])
+        for item, value in retval.items():
+            value += " ({})".format(inverse_keybindings[item])
         return retval
 
     def _configure_styles(self):
@@ -415,7 +414,7 @@ class ActionsFrame(ttk.Frame):  # pylint:disable=too-many-ancestors
         """
         frame = ttk.Frame(self)
         frame.pack(side=tk.TOP, fill=tk.Y)
-        buttons = dict()
+        buttons = {}
         for action in self.key_bindings.values():
             if action == self._initial_action:
                 btn_style = "actions_selected.TButton"
@@ -472,7 +471,7 @@ class ActionsFrame(ttk.Frame):  # pylint:disable=too-many-ancestors
         frame.pack(side=tk.TOP, fill=tk.Y)
         sep = ttk.Frame(frame, height=2, relief=tk.RIDGE)
         sep.pack(fill=tk.X, pady=5, side=tk.TOP)
-        buttons = dict()
+        buttons = {}
         tk_frame_index = self._globals.tk_frame_index
         for action in ("copy_prev", "copy_next", "reload"):
             if action == "reload":
@@ -719,7 +718,7 @@ class FrameViewer(tk.Canvas):  # pylint:disable=too-many-ancestors
         dict
             The {`action`: :class:`Editor`} dictionary of editors for :attr:`_actions` name.
         """
-        editors = dict()
+        editors = {}
         for editor_name in self._actions + ("Mesh", ):
             editor = eval(editor_name)(self,  # pylint:disable=eval-used
                                        self._det_faces)

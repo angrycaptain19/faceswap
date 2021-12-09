@@ -249,8 +249,7 @@ class _SysOutRouter():
         output = self._recolor.match(string)
         if not output:
             return "default"
-        tag = output.groupdict()["lvl"].strip().lower()
-        return tag
+        return output.groupdict()["lvl"].strip().lower()
 
     def write(self, string):
         """ Capture stdout/stderr """
@@ -620,12 +619,9 @@ class Tooltip:  # pylint:disable=too-few-public-methods
             x_2, y_2 = x_1 + width, y_1 + height
 
             x_delta = x_2 - s_width
-            if x_delta < 0:
-                x_delta = 0
+            x_delta = max(x_delta, 0)
             y_delta = y_2 - s_height
-            if y_delta < 0:
-                y_delta = 0
-
+            y_delta = max(y_delta, 0)
             offscreen = (x_delta, y_delta) != (0, 0)
 
             if offscreen:

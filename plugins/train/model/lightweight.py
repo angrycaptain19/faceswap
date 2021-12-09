@@ -24,7 +24,7 @@ class Model(OriginalModel):
         var_x = Conv2DBlock(256, activation="leakyrelu")(var_x)
         var_x = Conv2DBlock(512, activation="leakyrelu")(var_x)
         var_x = Dense(self.encoder_dim)(Flatten()(var_x))
-        var_x = Dense(4 * 4 * 512)(var_x)
+        var_x = Dense(4**2 * 512)(var_x)
         var_x = Reshape((4, 4, 512))(var_x)
         var_x = UpscaleBlock(256, activation="leakyrelu")(var_x)
         return KerasModel(input_, var_x, name="encoder")

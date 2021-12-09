@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Neural Network Blocks for faceswap.py. """
 
+
 import logging
 
 from keras.layers import (Activation, Add, BatchNormalization, Concatenate, Conv2D as KConv2D,
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 _CONFIG = dict()
-_NAMES = dict()
+_NAMES = {}
 
 
 def set_config(configuration):
@@ -533,7 +534,7 @@ class Upscale2xBlock():  # pylint:disable=too-few-public-methods
                                     scale_factor=self._scale_factor,
                                     activation=self._activation,
                                     **self._kwargs)(var_x)
-        if self._fast or (not self._fast and self._filters > 0):
+        if self._fast or self._filters > 0:
             var_x2 = Conv2D(self._filters, 3,
                             padding=self._padding,
                             name="{}_conv2d".format(self._name),

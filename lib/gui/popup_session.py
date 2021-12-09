@@ -181,7 +181,7 @@ class SessionPopUp(tk.Toplevel):
         """
         logger.debug("Building Loss Key Check Buttons")
         loss_keys = Session.get_loss_keys(self._session_id)
-        lk_vars = dict()
+        lk_vars = {}
         section_added = False
         for loss_key in sorted(loss_keys):
             if loss_key.startswith("total"):
@@ -295,7 +295,7 @@ class SessionPopUp(tk.Toplevel):
             return
         logger.debug("Saving to: %s", savefile)
         save_data = self._display_data.stats
-        fieldnames = sorted(key for key in save_data.keys())
+        fieldnames = sorted(iter(save_data.keys()))
 
         with savefile as outfile:
             csvout = csv.writer(outfile, delimiter=",")
@@ -446,9 +446,7 @@ class SessionPopUp(tk.Toplevel):
         display = self._vars["display"].get().lower()
         logger.debug("Validating selection. (loss_keys: %s, selections: %s, display: %s)",
                      loss_keys, selections, display)
-        if not selections or (display == "loss" and not loss_keys):
-            return False
-        return True
+        return bool(selections and (display != "loss" or loss_keys))
 
     def _check_valid_data(self):
         """ Check that the selections holds valid data to display
@@ -456,10 +454,7 @@ class SessionPopUp(tk.Toplevel):
         """
         logger.debug("Validating data. %s",
                      {key: len(val) for key, val in self._display_data.stats.items()})
-        if any(len(val) == 0  # pylint:disable=len-as-condition
-               for val in self._display_data.stats.values()):
-            return False
-        return True
+        return all(len(val) != 0 for val in self._display_data.stats.values())
 
     def _selections_to_list(self):
         """ Compile checkbox selections to a list.
@@ -470,12 +465,12 @@ class SessionPopUp(tk.Toplevel):
             The selected options from the check-boxes
         """
         logger.debug("Compiling selections to list")
-        selections = list()
-        for key, val in self._vars.items():
-            if (isinstance(val, tk.BooleanVar)
-                    and key != "outliers"
-                    and val.get()):
-                selections.append(key)
+        selections = [
+            key
+            for key, val in self._vars.items()
+            if (isinstance(val, tk.BooleanVar) and key != "outliers" and val.get())
+        ]
+
         logger.debug("Compiling selections to list: %s", selections)
         return selections
 

@@ -63,11 +63,14 @@ class Writer(Output):
         codec = self.config["codec"]
         tune = self.config["tune"]
         # Force all frames to the same size
-        output_args = ["-vf", "scale={}".format(self.output_dimensions)]
+        output_args = [
+            '-vf',
+            "scale={}".format(self.output_dimensions),
+            *["-c:v", codec],
+            *["-crf", str(self.config["crf"])],
+            *["-preset", self.config["preset"]],
+        ]
 
-        output_args.extend(["-c:v", codec])
-        output_args.extend(["-crf", str(self.config["crf"])])
-        output_args.extend(["-preset", self.config["preset"]])
 
         if tune is not None and tune in self.valid_tune[codec]:
             output_args.extend(["-tune", tune])
@@ -86,7 +89,7 @@ class Writer(Output):
         if self.frame_ranges is None:
             retval = list(range(1, total_count + 1))
         else:
-            retval = list()
+            retval = []
             for rng in self.frame_ranges:
                 retval.extend(list(range(rng[0], rng[1] + 1)))
         logger.debug("frame_order: %s", retval)

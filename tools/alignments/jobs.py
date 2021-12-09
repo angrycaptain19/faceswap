@@ -93,7 +93,7 @@ class Check():
         action = self._job.replace("-", "_")
         processor = getattr(self, "_get_{}".format(action))
         logger.debug("Processor: %s", processor)
-        return [item for item in processor()]  # pylint:disable=unnecessary-comprehension
+        return list(processor())
 
     def _get_no_faces(self):
         """ yield each frame that has no face match in alignments file """
@@ -109,8 +109,7 @@ class Check():
         """ yield each frame or face that has multiple faces
             matched in alignments file """
         process_type = getattr(self, "_get_multi_faces_{}".format(self._type))
-        for item in process_type():
-            yield item
+        yield from process_type()
 
     def _get_multi_faces_frames(self):
         """ Return Frames that contain multiple faces """
@@ -147,7 +146,7 @@ class Check():
         """ yield each frame in alignments that does
             not have a matching file """
         self.output_message = "Missing frames that are in alignments file"
-        frames = set(item["frame_fullname"] for item in self._items)
+        frames = {item["frame_fullname"] for item in self._items}
         for frame in tqdm(self._alignments.data.keys(), desc=self.output_message):
             if frame not in frames:
                 logger.debug("Returning: '%s'", frame)
@@ -650,7 +649,7 @@ class RemoveFaces():  # pylint:disable=too-few-public-methods
         logger.debug("Initializing %s: (arguments: %s)", self.__class__.__name__, arguments)
         self._alignments = alignments
 
-        kwargs = dict()
+        kwargs = {}
         if alignments.version < 2.1:
             # Update headers of faces generated with hash based alignments
             kwargs["alignments"] = alignments
@@ -741,11 +740,11 @@ class Rename():  # pylint:disable=too-few-public-methods
                      self.__class__.__name__, arguments, faces)
         self._alignments = alignments
 
-        kwargs = dict()
+        kwargs = {}
         if alignments.version < 2.1:
             # Update headers of faces generated with hash based alignments
             kwargs["alignments"] = alignments
-        self._faces = faces if faces else Faces(arguments.faces_dir, **kwargs)
+        self._faces = faces or Faces(arguments.faces_dir, **kwargs)
         logger.debug("Initialized %s", self.__class__.__name__)
 
     def process(self):
@@ -861,7 +860,7 @@ class Spatial():
         self.arguments = arguments
         self._alignments = alignments
         self.mappings = dict()
-        self.normalized = dict()
+        self.normalized = {}
         self.shapes_model = None
         logger.debug("Initialized %s", self.__class__.__name__)
 
@@ -920,7 +919,7 @@ class Spatial():
     def normalize(self):
         """ Compile all original and normalized alignments """
         logger.debug("Normalize")
-        count = sum(1 for val in self._alignments.data.values() if val["faces"])
+        count = sum(bool(val["faces"]) for val in self._alignments.data.values())
         landmarks_all = np.zeros((68, 2, int(count)))
 
         end = 0

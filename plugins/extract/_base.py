@@ -139,13 +139,13 @@ class Extractor():
         """ int: Batchsize for feeding this model. The number of images the model should
         feed through at once. """
 
-        self._queues = dict()
+        self._queues = {}
         """ dict: in + out queues and internal queues for this plugin, """
 
         self._threads = []
         """ list: Internal threads for this plugin """
 
-        self._extract_media = dict()
+        self._extract_media = {}
         """ dict: The :class:`plugins.extract.pipeline.ExtractMedia` objects currently being
         processed. Stored at input for pairing back up on output of extractor process """
 

@@ -118,13 +118,12 @@ class MediaLoader():
                 os.path.isfile(self.folder) and
                 os.path.splitext(self.folder)[1].lower() in _video_extensions):
             logger.verbose("Video exists at: '%s'", self.folder)
-            retval = cv2.VideoCapture(self.folder)  # pylint: disable=no-member
-            # TODO ImageIO single frame seek seems slow. Look into this
-            # retval = imageio.get_reader(self.folder, "ffmpeg")
+            return cv2.VideoCapture(self.folder)
+                # TODO ImageIO single frame seek seems slow. Look into this
+                # retval = imageio.get_reader(self.folder, "ffmpeg")
         else:
             logger.verbose("Folder exists at '%s'", self.folder)
-            retval = None
-        return retval
+            return None
 
     @staticmethod
     def valid_extension(filename):
@@ -152,12 +151,10 @@ class MediaLoader():
     def load_image(self, filename):
         """ Load an image """
         if self.is_video:
-            image = self.load_video_frame(filename)
-        else:
-            src = os.path.join(self.folder, filename)
-            logger.trace("Loading image: '%s'", src)
-            image = read_image(src, raise_error=True)
-        return image
+            return self.load_video_frame(filename)
+        src = os.path.join(self.folder, filename)
+        logger.trace("Loading image: '%s'", src)
+        return read_image(src, raise_error=True)
 
     def load_video_frame(self, filename):
         """ Load a requested frame from video """
@@ -191,8 +188,7 @@ class MediaLoader():
         loader = ImagesLoader(self.folder, queue_size=32)
         if skip_list is not None:
             loader.add_skip_list(skip_list)
-        for filename, image in loader.load():
-            yield filename, image
+        yield from loader.load()
 
     @staticmethod
     def save_image(output_folder, filename, image, metadata=None):
@@ -282,7 +278,7 @@ class Faces(MediaLoader):
         dict
             The source filename as key with list of face indices for the frame as value
         """
-        faces = dict()
+        faces = {}
         for face in self.file_list_sorted:
             faces.setdefault(face["source_filename"], list()).append(face["face_index"])
         logger.trace(faces)
@@ -307,8 +303,7 @@ class Frames(MediaLoader):
     def process_folder(self):
         """ Iterate through the frames folder pulling the base filename """
         iterator = self.process_video if self.is_video else self.process_frames
-        for item in iterator():
-            yield item
+        yield from iterator()
 
     def process_frames(self):
         """ Process exported Frames """
@@ -341,10 +336,14 @@ class Frames(MediaLoader):
 
     def load_items(self):
         """ Load the frame info into dictionary """
-        frames = dict()
-        for frame in self.file_list_sorted:
-            frames[frame["frame_fullname"]] = (frame["frame_name"],
-                                               frame["frame_extension"])
+        frames = {
+            frame["frame_fullname"]: (
+                frame["frame_name"],
+                frame["frame_extension"],
+            )
+            for frame in self.file_list_sorted
+        }
+
         logger.trace(frames)
         return frames
 
@@ -365,7 +364,7 @@ class ExtractedFaces():
         self.alignments = alignments
         self.frames = frames
         self.current_frame = None
-        self.faces = list()
+        self.faces = []
         logger.trace("Initialized %s", self.__class__.__name__)
 
     def get_faces(self, frame, image=None):
@@ -376,7 +375,7 @@ class ExtractedFaces():
         alignments = self.alignments.get_faces_in_frame(frame)
         logger.trace("Alignments for frame: (frame: '%s', alignments: %s)", frame, alignments)
         if not alignments:
-            self.faces = list()
+            self.faces = []
             return
         image = self.frames.load_image(frame) if image is None else image
         self.faces = [self.extract_one_face(alignment, image) for alignment in alignments]
@@ -405,7 +404,7 @@ class ExtractedFaces():
         logger.trace("frame: '%s'", frame)
         if self.current_frame != frame:
             self.get_faces(frame)
-        sizes = list()
+        sizes = []
         for face in self.faces:
             roi = face.aligned.original_roi.squeeze()
             top_left, top_right = roi[0], roi[3]

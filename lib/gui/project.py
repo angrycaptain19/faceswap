@@ -342,11 +342,10 @@ class _GuiSession():  # pylint:disable=too-few-public-methods
             logger.debug("Loading config")
             self._options = self._serializer.load(self._filename)
             self._check_valid_choices()
-            retval = True
+            return True
         else:
             logger.debug("File doesn't exist. Aborting")
-            retval = False
-        return retval
+            return False
 
     def _check_valid_choices(self):
         """ Check whether the loaded file has any selected combo/radio/multi-option values that are
@@ -432,14 +431,13 @@ class Tasks(_GuiSession):
     """
     def __init__(self, config, file_handler):
         super().__init__(config, file_handler)
-        self._tasks = dict()
+        self._tasks = {}
 
     @property
     def _is_project(self):
         """ str: ``True`` if all tasks are from an overarching session project else ``False``."""
-        retval = False if not self._tasks else all(v.get("is_project", False)
+        return False if not self._tasks else all(v.get("is_project", False)
                                                    for v in self._tasks.values())
-        return retval
 
     @property
     def _project_filename(self):
@@ -612,7 +610,7 @@ class Tasks(_GuiSession):
         called by :class:`Project` when a project has been loaded which is in fact a task.
         """
         logger.debug("Clearing stored tasks")
-        self._tasks = dict()
+        self._tasks = {}
 
     def add_project_task(self, filename, command, options):
         """ Add an individual task from a loaded :class:`Project` to the internal :attr:`_tasks`
@@ -684,7 +682,7 @@ class Project(_GuiSession):
     @property
     def _project_modified(self):
         """bool: ``True`` if the project has been modified otherwise ``False``. """
-        return any([var.get() for var in self._modified_vars.values()])
+        return any(var.get() for var in self._modified_vars.values())
 
     @property
     def _tasks(self):
@@ -786,8 +784,7 @@ class Project(_GuiSession):
     def _update_tasks(self):
         """ Add the tasks from the loaded project to the :class:`Tasks` class. """
         for key, val in self._cli_options.items():
-            opts = {key: val}
-            opts["tab_name"] = key
+            opts = {key: val, 'tab_name': key}
             self._tasks.add_project_task(self._filename, key, opts)
 
     def reload(self, *args):  # pylint:disable=unused-argument

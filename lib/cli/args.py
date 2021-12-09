@@ -63,17 +63,17 @@ class SmartFormatter(argparse.HelpFormatter):
         width: int
             The display width, in characters, for the help text
         """
-        if text.startswith("R|"):
-            text = self._whitespace_matcher_limited.sub(' ', text).strip()[2:]
-            output = list()
-            for txt in text.splitlines():
-                indent = ""
-                if txt.startswith("L|"):
-                    indent = "    "
-                    txt = "  - {}".format(txt[2:])
-                output.extend(textwrap.wrap(txt, width, subsequent_indent=indent))
-            return output
-        return argparse.HelpFormatter._split_lines(self, text, width)
+        if not text.startswith("R|"):
+            return argparse.HelpFormatter._split_lines(self, text, width)
+        text = self._whitespace_matcher_limited.sub(' ', text).strip()[2:]
+        output = []
+        for txt in text.splitlines():
+            indent = ""
+            if txt.startswith("L|"):
+                indent = "    "
+                txt = "  - {}".format(txt[2:])
+            output.extend(textwrap.wrap(txt, width, subsequent_indent=indent))
+        return output
 
 
 class FaceSwapArgs():
@@ -136,8 +136,7 @@ class FaceSwapArgs():
         list
             The list of command line options for the given command
         """
-        argument_list = []
-        return argument_list
+        return []
 
     @staticmethod
     def get_optional_arguments():
@@ -151,8 +150,7 @@ class FaceSwapArgs():
         list
             The list of optional command line options for the given command
         """
-        argument_list = []
-        return argument_list
+        return []
 
     @staticmethod
     def _get_global_arguments():
@@ -165,7 +163,7 @@ class FaceSwapArgs():
         list
             The list of global command line options for all Faceswap commands.
         """
-        global_args = list()
+        global_args = []
         if _GPUS:
             global_args.append(dict(
                 opts=("-X", "--exclude-gpus"),
@@ -235,12 +233,13 @@ class FaceSwapArgs():
         :class:`~lib.cli.args.FullHelpArgumentParser`
             The parser for the given command
         """
-        parser = subparser.add_parser(command,
-                                      help=description,
-                                      description=description,
-                                      epilog="Questions and feedback: https://faceswap.dev/forum",
-                                      formatter_class=SmartFormatter)
-        return parser
+        return subparser.add_parser(
+            command,
+            help=description,
+            description=description,
+            epilog="Questions and feedback: https://faceswap.dev/forum",
+            formatter_class=SmartFormatter,
+        )
 
     def _add_arguments(self):
         """ Parse the list of dictionaries containing the command line arguments and convert to
@@ -289,17 +288,22 @@ class ExtractConvertArgs(FaceSwapArgs):
         list
             The list of command line options for the given Extract and Convert
         """
-        argument_list = list()
-        argument_list.append(dict(
-            opts=("-i", "--input-dir"),
-            action=DirOrFileFullPaths,
-            filetypes="video",
-            dest="input_dir",
-            required=True,
-            group=_("Data"),
-            help=_("Input directory or video. Either a directory containing the image files you "
-                   "wish to process or path to a video file. NB: This should be the source video/"
-                   "frames NOT the source faces.")))
+        argument_list = [
+            dict(
+                opts=("-i", "--input-dir"),
+                action=DirOrFileFullPaths,
+                filetypes="video",
+                dest="input_dir",
+                required=True,
+                group=_("Data"),
+                help=_(
+                    "Input directory or video. Either a directory containing the image files you "
+                    "wish to process or path to a video file. NB: This should be the source video/"
+                    "frames NOT the source faces."
+                ),
+            )
+        ]
+
         argument_list.append(dict(
             opts=("-o", "--output-dir"),
             action=DirFullPaths,
@@ -355,23 +359,28 @@ class ExtractArgs(ExtractConvertArgs):
             default_detector = "s3fd"
             default_aligner = "fan"
 
-        argument_list = []
-        argument_list.append(dict(
-            opts=("-D", "--detector"),
-            action=Radio,
-            type=str.lower,
-            default=default_detector,
-            choices=PluginLoader.get_available_extractors("detect"),
-            group=_("Plugins"),
-            help=_("R|Detector to use. Some of these have configurable settings in "
-                   "'/config/extract.ini' or 'Settings > Configure Extract 'Plugins':"
-                   "\nL|cv2-dnn: A CPU only extractor which is the least reliable and least "
-                   "resource intensive. Use this if not using a GPU and time is important."
-                   "\nL|mtcnn: Good detector. Fast on CPU, faster on GPU. Uses fewer resources "
-                   "than other GPU detectors but can often return more false positives."
-                   "\nL|s3fd: Best detector. Slow on CPU, faster on GPU. Can detect more faces "
-                   "and fewer false positives than other GPU detectors, but is a lot more "
-                   "resource intensive.")))
+        argument_list = [
+            dict(
+                opts=("-D", "--detector"),
+                action=Radio,
+                type=str.lower,
+                default=default_detector,
+                choices=PluginLoader.get_available_extractors("detect"),
+                group=_("Plugins"),
+                help=_(
+                    "R|Detector to use. Some of these have configurable settings in "
+                    "'/config/extract.ini' or 'Settings > Configure Extract 'Plugins':"
+                    "\nL|cv2-dnn: A CPU only extractor which is the least reliable and least "
+                    "resource intensive. Use this if not using a GPU and time is important."
+                    "\nL|mtcnn: Good detector. Fast on CPU, faster on GPU. Uses fewer resources "
+                    "than other GPU detectors but can often return more false positives."
+                    "\nL|s3fd: Best detector. Slow on CPU, faster on GPU. Can detect more faces "
+                    "and fewer false positives than other GPU detectors, but is a lot more "
+                    "resource intensive."
+                ),
+            )
+        ]
+
         argument_list.append(dict(
             opts=("-A", "--aligner"),
             action=Radio,
@@ -620,17 +629,22 @@ class ConvertArgs(ExtractConvertArgs):
             The list of optional command line options for the Convert command
         """
 
-        argument_list = []
-        argument_list.append(dict(
-            opts=("-ref", "--reference-video"),
-            action=FileFullPaths,
-            filetypes="video",
-            type=str,
-            dest="reference_video",
-            group=_("Data"),
-            help=_("Only required if converting from images to video. Provide The original video "
-                   "that the source frames were extracted from (for extracting the fps and "
-                   "audio).")))
+        argument_list = [
+            dict(
+                opts=("-ref", "--reference-video"),
+                action=FileFullPaths,
+                filetypes="video",
+                type=str,
+                dest="reference_video",
+                group=_("Data"),
+                help=_(
+                    "Only required if converting from images to video. Provide The original video "
+                    "that the source frames were extracted from (for extracting the fps and "
+                    "audio)."
+                ),
+            )
+        ]
+
         argument_list.append(dict(
             opts=("-m", "--model-dir"),
             action=DirFullPaths,
@@ -874,16 +888,21 @@ class TrainArgs(FaceSwapArgs):
         list
             The list of command line options for training
         """
-        argument_list = list()
-        argument_list.append(dict(
-            opts=("-A", "--input-A"),
-            action=DirFullPaths,
-            dest="input_a",
-            required=True,
-            group=_("faces"),
-            help=_("Input directory. A directory containing training images for face A. This is "
-                   "the original face, i.e. the face that you want to remove and replace with "
-                   "face B.")))
+        argument_list = [
+            dict(
+                opts=("-A", "--input-A"),
+                action=DirFullPaths,
+                dest="input_a",
+                required=True,
+                group=_("faces"),
+                help=_(
+                    "Input directory. A directory containing training images for face A. This is "
+                    "the original face, i.e. the face that you want to remove and replace with "
+                    "face B."
+                ),
+            )
+        ]
+
         argument_list.append(dict(
             opts=("-B", "--input-B"),
             action=DirFullPaths,
@@ -1139,11 +1158,12 @@ class GuiArgs(FaceSwapArgs):
         list
             The list of command line options for the GUI
         """
-        argument_list = []
-        argument_list.append(dict(
-            opts=("-d", "--debug"),
-            action="store_true",
-            dest="debug",
-            default=False,
-            help=_("Output to Shell console instead of GUI console")))
-        return argument_list
+        return [
+            dict(
+                opts=("-d", "--debug"),
+                action="store_true",
+                dest="debug",
+                default=False,
+                help=_("Output to Shell console instead of GUI console"),
+            )
+        ]

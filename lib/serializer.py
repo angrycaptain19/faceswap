@@ -338,7 +338,7 @@ def get_serializer_from_filename(filename):
         retval = _CompressedSerializer()
     elif extension in (".yaml", ".yml") and yaml is not None:
         retval = _YAMLSerializer()
-    elif extension in (".yaml", ".yml") and yaml is None:
+    elif extension in (".yaml", ".yml"):
         logger.warning("You must have PyYAML installed to use YAML as the serializer.\n"
                        "Switching to JSON as the serializer.")
         retval = _JSONSerializer()

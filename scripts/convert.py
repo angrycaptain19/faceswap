@@ -80,10 +80,7 @@ class Convert():  # pylint:disable=too-few-public-methods
     @property
     def _queue_size(self):
         """ int: Size of the converter queues. 16 for single process otherwise 32 """
-        if self._args.singleprocess:
-            retval = 16
-        else:
-            retval = 32
+        retval = 16 if self._args.singleprocess else 32
         logger.debug(retval)
         return retval
 
@@ -300,7 +297,7 @@ class DiskIO():
     def _total_count(self):
         """ int: The total number of frames to be converted """
         if self._frame_ranges and not self._args.keep_unchanged:
-            retval = sum([fr[1] - fr[0] + 1 for fr in self._frame_ranges])
+            retval = sum(fr[1] - fr[0] + 1 for fr in self._frame_ranges)
         else:
             retval = self._images.count
         logger.debug(retval)
@@ -357,7 +354,7 @@ class DiskIO():
             raise FaceswapError("Frame Ranges specified, but could not determine frame numbering "
                                 "from filenames")
 
-        retval = list()
+        retval = []
         for rng in self._args.frame_ranges:
             if "-" not in rng:
                 raise FaceswapError("Frame Ranges not specified in the correct format")
@@ -560,7 +557,7 @@ class DiskIO():
             return list()
 
         faces = self._alignments.get_faces_in_frame(frame_name)
-        detected_faces = list()
+        detected_faces = []
 
         for rawface in faces:
             face = DetectedFace()
@@ -884,13 +881,13 @@ class Predict():
                         batch_size = 1
                     predicted = self._predict(feed_faces, batch_size)
                 else:
-                    predicted = list()
+                    predicted = []
 
                 self._queue_out_frames(batch, predicted)
 
             consecutive_no_faces = 0
             faces_seen = 0
-            batch = list()
+            batch = []
             if item == "EOF":
                 logger.debug("EOF Received")
                 break
@@ -1073,7 +1070,7 @@ class OptionalActions():  # pylint:disable=too-few-public-methods
         dict
             Dictionary of source frame names with a list of associated face indices to be skipped
         """
-        retval = dict()
+        retval = {}
         input_aligned_dir = self._args.input_aligned_dir
 
         if input_aligned_dir is None:

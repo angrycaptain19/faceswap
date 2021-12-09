@@ -60,12 +60,10 @@ class _SysInfo():  # pylint:disable=too-few-public-methods
     def _is_virtual_env(self):
         """ bool: `True` if running inside a virtual environment otherwise ``False``. """
         if not self._is_conda:
-            retval = (hasattr(sys, "real_prefix") or
+            return (hasattr(sys, "real_prefix") or
                       (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix))
-        else:
-            prefix = os.path.dirname(sys.prefix)
-            retval = (os.path.basename(prefix) == "envs")
-        return retval
+        prefix = os.path.dirname(sys.prefix)
+        return (os.path.basename(prefix) == "envs")
 
     @property
     def _ram_free(self):
@@ -131,8 +129,7 @@ class _SysInfo():  # pylint:disable=too-few-public-methods
         stdout, stderr = git.communicate()
         if stderr:
             return "Not Found"
-        branch = stdout.decode().splitlines()[0].replace("On branch ", "")
-        return branch
+        return stdout.decode().splitlines()[0].replace("On branch ", "")
 
     @property
     def _git_commits(self):
@@ -219,10 +216,10 @@ class _SysInfo():  # pylint:disable=too-few-public-methods
         str
             The total, available, used and free RAM displayed in Megabytes
         """
-        retval = list()
+        retval = []
         for name in ("total", "available", "used", "free"):
             value = getattr(self, "_ram_{}".format(name))
-            value = int(value / (1024 * 1024))
+            value = int(value / 1024**2)
             retval.append("{}: {}MB".format(name.capitalize(), value))
         return ", ".join(retval)
 
